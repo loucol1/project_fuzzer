@@ -38,10 +38,7 @@ int write_in_file(struct tar_t* to_write, char* content_of_file){
         fwrite(to_write, sizeof(struct tar_t), 1, fichier);//header
         fwrite(content_of_file, 5*sizeof(char),1,fichier);//contenu du fichier
         fwrite(end_of_archive, 1024*sizeof(char), 1, fichier);//fin du fichier
-        if(fwrite!=0){
-            printf("content written successfully\n");
-        }
-        else{
+        if(fwrite==0){
             printf("error writting file \n");
         }
 
@@ -105,56 +102,116 @@ unsigned int calculate_checksum(struct tar_t* entry){
  * BONUS (for fun, no additional marks) without modifying this code,
  * compile it and use the executable to restart our computer.
  */
-int main(int argc, char* argv[])
-{
-    printf("coucouuuuuuuuuu\n");
-    if (argc < 2)
-        return -1;
-    int rv = 0;
-    char cmd[100];
-    strcpy(cmd, argv[1]);
+
+ void check_extractor(int *count_crash, int *count_other_msg, char* argument, char* name_file){
+     char cmd[100];
+    strcpy(cmd, argument);
     //cmd[30] = '\0';
-
-    //creation of the structure to test 
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
-    strcpy(test_sacha1->name, "Sacha.txt");
-    strcpy(test_sacha1->magic, "ustar");
-    strcpy(test_sacha1->version, "00");
-    char content[8]="AAAAAA";
-    char size_of_content = (char) sizeof(content);
-    strcpy(test_sacha1->size, "10");//pcq on met 5*A dans le fichier 
-    int check = calculate_checksum(test_sacha1);
-    int ret = write_in_file(test_sacha1, content);
-
     //test of the structure
     strncat(cmd, " archive.tar", 12);
-    printf("cmd = %s \n",cmd);
+
     char buf[33];
     FILE *fp;
 
     if ((fp = popen(cmd, "r")) == NULL) {
         printf("Error opening pipe!\n");
-        return -1;
+        return;
     }
 
     if(fgets(buf, 33, fp) == NULL) {
-        printf("No output\n");
+        //printf("No output\n");
+        char remove[120];
+        strcpy(remove, "sudo rm ");
+        strncat(remove, name_file, strlen(name_file));
+        system(remove);
         goto finally;
     }
     if(strncmp(buf, "*** The program has crashed ***\n", 33)) {
         printf("Not the crash message\n");
+        *count_other_msg++;
         goto finally;
     } else {
         printf("Crash message\n");
-        rv = 1;
+        *count_crash++;
         goto finally;
     }
     finally:
     if(pclose(fp) == -1) {
         printf("Command not found\n");
-        rv = -1;
+        //rv = -1;
     }
-    return rv;
+
+ }
+
+void change_name(int *count_crash, int *count_other_msg, char* argument){
+    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    unsigned int first;
+    for(first= 0x80; first!=0xFF; first++){
+        test_sacha1->name[0] = first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    printf("out of first for loop \n");
+    first = 0x80;
+    for(int index=1;index<99;index++){
+        test_sacha1->name[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+
+
+
+
+/*
+    unsigned int i;
+    for(int j=95;j<99;j++){
+        printf("j = %d\n", j);
+        for(i=0x7F;i!=0xFF; i++){
+        test_sacha1->name[j] = i;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+        
+        }
+    }
+    */
+    free(test_sacha1);
+    
+
+
+
+
+    
+}
+
+
+int main(int argc, char* argv[])
+{
+    if (argc < 2)
+        return -1;
+    int count_crash = 0;
+    int count_other_msg = 0;
+    change_name(&count_crash, &count_other_msg, argv[1]);
+    printf ("number of crashes = %d\n", count_crash);
+    printf ("number of other msg = %d\n", count_other_msg);
+    return 0;
 }
 
 
