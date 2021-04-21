@@ -107,10 +107,11 @@ unsigned int calculate_checksum(struct tar_t* entry){
  */
 int main(int argc, char* argv[])
 {
+    printf("coucouuuuuuuuuu\n");
     if (argc < 2)
         return -1;
     int rv = 0;
-    char cmd[49];
+    char cmd[100];
     strcpy(cmd, argv[1]);
     //cmd[30] = '\0';
 
