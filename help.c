@@ -128,11 +128,11 @@ unsigned int calculate_checksum(struct tar_t* entry){
     }
     if(strncmp(buf, "*** The program has crashed ***\n", 33)) {
         printf("Not the crash message\n");
-        *count_other_msg++;
+        *count_other_msg= *count_other_msg+1;
         goto finally;
     } else {
         printf("Crash message\n");
-        *count_crash++;
+        *count_crash = *count_crash+1;
         goto finally;
     }
     finally:
@@ -144,6 +144,7 @@ unsigned int calculate_checksum(struct tar_t* entry){
  }
 
 void change_name(int *count_crash, int *count_other_msg, char* argument){
+    printf("change name\n");
     struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
     unsigned int first;
     for(first= 0x80; first!=0xFF; first++){
@@ -157,7 +158,6 @@ void change_name(int *count_crash, int *count_other_msg, char* argument){
         int ret = write_in_file(test_sacha1, content); 
         check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
-    printf("out of first for loop \n");
     first = 0x80;
     for(int index=1;index<99;index++){
         test_sacha1->name[index]= first;
@@ -170,16 +170,18 @@ void change_name(int *count_crash, int *count_other_msg, char* argument){
         int ret = write_in_file(test_sacha1, content); 
         check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
+    free(test_sacha1);    
+}
 
 
 
-
-/*
-    unsigned int i;
-    for(int j=95;j<99;j++){
-        printf("j = %d\n", j);
-        for(i=0x7F;i!=0xFF; i++){
-        test_sacha1->name[j] = i;
+void change_mode(int *count_crash, int *count_other_msg, char* argument){
+    printf("change mode\n");
+    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "mode");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF; first++){
+        test_sacha1->mode[0] = first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
         char content[5]="AAAAA";
@@ -188,18 +190,62 @@ void change_name(int *count_crash, int *count_other_msg, char* argument){
         int check = calculate_checksum(test_sacha1);
         int ret = write_in_file(test_sacha1, content); 
         check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
-        
-        }
     }
-    */
-    free(test_sacha1);
-    
-
-
-
-
-    
+    first = 0x80;
+    for(int index=1;index<8;index++){
+        test_sacha1->mode[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
 }
+
+
+void change_uid(int *count_crash, int *count_other_msg, char* argument){
+    printf("change uid\n");
+    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "coucou");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF; first++){
+        test_sacha1->uid[0] = first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    first = 0x80;
+    for(int index=1;index<8;index++){
+        test_sacha1->mode[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
+
+
+
+
+
+
+
+
+
 
 
 int main(int argc, char* argv[])
@@ -209,6 +255,8 @@ int main(int argc, char* argv[])
     int count_crash = 0;
     int count_other_msg = 0;
     change_name(&count_crash, &count_other_msg, argv[1]);
+    change_mode(&count_crash, &count_other_msg, argv[1]);
+    change_uid(&count_crash, &count_other_msg, argv[1]);
     printf ("number of crashes = %d\n", count_crash);
     printf ("number of other msg = %d\n", count_other_msg);
     return 0;
