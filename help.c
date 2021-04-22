@@ -121,7 +121,7 @@ unsigned int calculate_checksum(struct tar_t* entry){
     if(fgets(buf, 33, fp) == NULL) {
         //printf("No output\n");
         char remove[120];
-        strcpy(remove, "sudo rm ");
+        strcpy(remove, "sudo rm -f ");
         strncat(remove, name_file, strlen(name_file));
         system(remove);
         if(pclose(fp) == -1) {
@@ -162,9 +162,9 @@ unsigned int calculate_checksum(struct tar_t* entry){
 void change_name(int *count_crash, int *count_other_msg, char* argument){
     int flag=0;
     printf("change name\n");
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     unsigned int first;
-    for(first= 0x80; first!=0xFF && flag==0; first++){
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
         test_sacha1->name[0] = first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -176,7 +176,7 @@ void change_name(int *count_crash, int *count_other_msg, char* argument){
         flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
     first = 0x80;
-    for(int index=1;index<99 && flag==0;index++){
+    for(int index=1;index<99 && flag!=1;index++){
         test_sacha1->name[index]= first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -195,10 +195,10 @@ void change_name(int *count_crash, int *count_other_msg, char* argument){
 void change_mode(int *count_crash, int *count_other_msg, char* argument){
     printf("change mode\n");
     int flag=0;
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     strcpy(test_sacha1->name, "mode");
     unsigned int first;
-    for(first= 0x80; first!=0xFF && flag==0; first++){
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
         test_sacha1->mode[0] = first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -210,7 +210,7 @@ void change_mode(int *count_crash, int *count_other_msg, char* argument){
         flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
     first = 0x80;
-    for(int index=1;index<8 && flag==0;index++){
+    for(int index=1;index<8 && flag!=1;index++){
         test_sacha1->mode[index]= first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -228,10 +228,10 @@ void change_mode(int *count_crash, int *count_other_msg, char* argument){
 void change_uid(int *count_crash, int *count_other_msg, char* argument){
     printf("change uid\n");
     int flag=0;
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     strcpy(test_sacha1->name, "uid");
     unsigned int first;
-    for(first= 0x80; first!=0xFF && flag==0; first++){
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
         test_sacha1->uid[0] = first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -243,7 +243,7 @@ void change_uid(int *count_crash, int *count_other_msg, char* argument){
         flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
     first = 0x80;
-    for(int index=1;index<8 && flag==0;index++){
+    for(int index=1;index<8 && flag!=1;index++){
         test_sacha1->uid[index]= first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -257,10 +257,11 @@ void change_uid(int *count_crash, int *count_other_msg, char* argument){
     free(test_sacha1);    
 }
 
+/*
 void change_gid(int *count_crash, int *count_other_msg, char* argument){
     printf("change gid\n");
     int flag=0;
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     strcpy(test_sacha1->name, "gid");
     unsigned int first;
     for(first= 0x80; first!=0xFF && flag==0; first++){
@@ -288,13 +289,38 @@ void change_gid(int *count_crash, int *count_other_msg, char* argument){
     }
     free(test_sacha1);    
 }
+*/
+
+void change_gid(int *count_crash, int *count_other_msg, char* argument){
+    printf("change gid\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "gid");
+    strcpy(test_sacha1->gid, "0000000");
+    for(int index = 0;index<7 && flag!=1; index++){//atention! ce n'est pas 8 normalement??
+        for(int new_gid=0;new_gid<8 && flag!=1; new_gid++){
+            char nbr = new_gid+'0';
+            test_sacha1->gid[index] = nbr;
+            //test_sacha1->gid[8]='\0';
+            strcpy(test_sacha1->magic, "ustar");
+            strcpy(test_sacha1->version, "00");
+            char content[5]="AAAAA";
+            char size_of_content = (char) sizeof(content);
+            strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+            int check = calculate_checksum(test_sacha1);
+            int ret = write_in_file(test_sacha1, content); 
+            flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+        }
+    }
+    free(test_sacha1);
+}
 
 
-
+/*
 void change_size(int *count_crash, int *count_other_msg, char* argument){
     printf("change size\n");
     int flag=0;
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     strcpy(test_sacha1->name, "size");
     unsigned int first;
     for(first= 0x80; first!=0xFF && flag==0; first++){
@@ -322,14 +348,66 @@ void change_size(int *count_crash, int *count_other_msg, char* argument){
     }
     free(test_sacha1);    
 }
+*/
+
+
+void change_size(int *count_crash, int *count_other_msg, char* argument){
+    printf("change size\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "size");
+    strcpy(test_sacha1->size, "00000000000");
+    for(int index = 0;index<11 && flag!=1; index++){//atention! ce n'est pas 12 normalement??
+        for(int new_gid=0;new_gid<8 && flag!=1; new_gid++){
+            char nbr = new_gid+'0';
+            test_sacha1->size[index] = nbr;
+            //test_sacha1->gid[8]='\0';
+            strcpy(test_sacha1->magic, "ustar");
+            strcpy(test_sacha1->version, "00");
+            char content[5]="AAAAA";
+            char size_of_content = (char) sizeof(content);
+            //strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+            int check = calculate_checksum(test_sacha1);
+            int ret = write_in_file(test_sacha1, content); 
+            flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+        }
+    }
+    free(test_sacha1);
+}
 
 void change_mtime(int *count_crash, int *count_other_msg, char* argument){
     printf("change mtime\n");
     int flag=0;
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "mtime");
+    strcpy(test_sacha1->mtime, "00000000000");
+    for(int index = 0;index<11 && flag!=1; index++){//atention! ce n'est pas 12 normalement??
+        for(int new_gid=0;new_gid<8 && flag!=1; new_gid++){
+            char nbr = new_gid+'0';
+            test_sacha1->mtime[index] = nbr;
+            //test_sacha1->gid[8]='\0';
+            strcpy(test_sacha1->magic, "ustar");
+            strcpy(test_sacha1->version, "00");
+            char content[5]="AAAAA";
+            char size_of_content = (char) sizeof(content);
+            strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+            int check = calculate_checksum(test_sacha1);
+            int ret = write_in_file(test_sacha1, content); 
+            flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+        }
+    }
+    free(test_sacha1);
+}
+
+
+/*
+void change_mtime(int *count_crash, int *count_other_msg, char* argument){
+    printf("change mtime\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     strcpy(test_sacha1->name, "mtime");
     unsigned int first;
-    for(first= 0x80; first!=0xFF && flag==0; first++){
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
         test_sacha1->mtime[0] = first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -341,7 +419,7 @@ void change_mtime(int *count_crash, int *count_other_msg, char* argument){
         flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
     first = 0x80;
-    for(int index=1;index<12 && flag==0;index++){
+    for(int index=1;index<12 && flag!=1;index++){
         test_sacha1->mtime[index]= first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -354,17 +432,17 @@ void change_mtime(int *count_crash, int *count_other_msg, char* argument){
     }
     free(test_sacha1);    
 }
-
+*/
 
 
 
 void change_chksum(int *count_crash, int *count_other_msg, char* argument){
     printf("change chksum\n");
     int flag=0;
-    struct tar_t* test_sacha1 = (struct tar_t*) malloc(sizeof(struct tar_t));
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
     strcpy(test_sacha1->name, "chksum");
     unsigned int first;
-    for(first= 0x80; first!=0xFF && flag==0; first++){
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
         test_sacha1->chksum[0] = first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -376,7 +454,7 @@ void change_chksum(int *count_crash, int *count_other_msg, char* argument){
         flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
     }
     first = 0x80;
-    for(int index=1;index<8 && flag==0;index++){
+    for(int index=1;index<8 && flag!=1;index++){
         test_sacha1->chksum[index]= first;
         strcpy(test_sacha1->magic, "ustar");
         strcpy(test_sacha1->version, "00");
@@ -390,7 +468,25 @@ void change_chksum(int *count_crash, int *count_other_msg, char* argument){
     free(test_sacha1);    
 }
 
-
+void change_typeflag(int *count_crash, int *count_other_msg, char* argument){
+    printf("change typeflag\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "typeflag");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
+        test_sacha1->typeflag = first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
 
 
 int main(int argc, char* argv[])
@@ -407,6 +503,7 @@ int main(int argc, char* argv[])
     change_mtime(&count_crash, &count_other_msg, argv[1]);
     change_chksum(&count_crash, &count_other_msg, argv[1]);
     change_name(&count_crash, &count_other_msg, argv[1]);
+    change_typeflag(&count_crash, &count_other_msg, argv[1]);
     printf ("number of crashes = %d\n", count_crash);
     printf ("number of other msg = %d\n", count_other_msg);
     return 0;
