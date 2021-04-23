@@ -488,6 +488,169 @@ void change_typeflag(int *count_crash, int *count_other_msg, char* argument){
     free(test_sacha1);    
 }
 
+void change_linkname(int *count_crash, int *count_other_msg, char* argument){
+    printf("change linkname\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "linkname");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
+        test_sacha1->linkname[0] = first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    first = 0x80;
+    for(int index=1;index<99 && flag!=1;index++){//!!!!!!normalemet, il faudrait aller jusque 99 compris!
+        test_sacha1->linkname[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
+
+
+
+void change_magic(int *count_crash, int *count_other_msg, char* argument){
+    printf("change magic\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "magic");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
+        test_sacha1->magic[0] = first;
+        //strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    first = 0x80;
+    for(int index=1;index<6 && flag!=1;index++){//!!!!!!
+        test_sacha1->magic[index]= first;
+        //strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
+
+void change_version(int *count_crash, int *count_other_msg, char* argument){
+    printf("change version\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "version");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
+        test_sacha1->version[0] = first;
+        strcpy(test_sacha1->magic, "ustar");
+        //strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    first = 0x80;
+    for(int index=1;index<2 && flag!=1;index++){//!!!!!!
+        test_sacha1->version[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        //strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
+
+void change_uname(int *count_crash, int *count_other_msg, char* argument){
+    printf("change uname\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "uname");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
+        test_sacha1->uname[0] = first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    first = 0x80;
+    for(int index=1;index<32 && flag!=1;index++){//!!!!!!
+        test_sacha1->uname[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
+
+void change_gname(int *count_crash, int *count_other_msg, char* argument){
+    printf("change gname\n");
+    int flag=0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "gname");
+    unsigned int first;
+    for(first= 0x80; first!=0xFF && flag!=1; first++){
+        test_sacha1->gname[0] = first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    first = 0x80;
+    for(int index=1;index<31 && flag!=1;index++){//!!!!!! 31!!!!!!!!!!!!!!!!!!!!!!!
+        test_sacha1->gname[index]= first;
+        strcpy(test_sacha1->magic, "ustar");
+        strcpy(test_sacha1->version, "00");
+        char content[5]="AAAAA";
+        char size_of_content = (char) sizeof(content);
+        strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+        int check = calculate_checksum(test_sacha1);
+        int ret = write_in_file(test_sacha1, content); 
+        flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    }
+    free(test_sacha1);    
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -496,14 +659,19 @@ int main(int argc, char* argv[])
     int count_crash = 0;
     int count_other_msg = 0;
     
-    change_mode(&count_crash, &count_other_msg, argv[1]);
-    change_uid(&count_crash, &count_other_msg, argv[1]);
-    change_gid(&count_crash, &count_other_msg, argv[1]);
+    //change_mode(&count_crash, &count_other_msg, argv[1]);
+    //change_uid(&count_crash, &count_other_msg, argv[1]);
+    //change_gid(&count_crash, &count_other_msg, argv[1]);
     change_size(&count_crash, &count_other_msg, argv[1]);
-    change_mtime(&count_crash, &count_other_msg, argv[1]);
-    change_chksum(&count_crash, &count_other_msg, argv[1]);
-    change_name(&count_crash, &count_other_msg, argv[1]);
-    change_typeflag(&count_crash, &count_other_msg, argv[1]);
+    //change_mtime(&count_crash, &count_other_msg, argv[1]);
+    //change_chksum(&count_crash, &count_other_msg, argv[1]);
+    //change_name(&count_crash, &count_other_msg, argv[1]);
+    //change_typeflag(&count_crash, &count_other_msg, argv[1]);
+    //change_linkname(&count_crash, &count_other_msg, argv[1]);
+    //change_magic(&count_crash, &count_other_msg, argv[1]);
+    //change_version(&count_crash, &count_other_msg, argv[1]);
+    //change_uname(&count_crash, &count_other_msg, argv[1]);
+    //change_gname(&count_crash, &count_other_msg, argv[1]);
     printf ("number of crashes = %d\n", count_crash);
     printf ("number of other msg = %d\n", count_other_msg);
     return 0;
