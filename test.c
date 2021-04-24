@@ -3,19 +3,27 @@
 #include <stdlib.h>
 
 
+void dec_to_oct(long dec, char* to_ret){
+int oct = 0;
+int i = 1;
+while(dec !=0){
+    oct = oct +(dec%8)*i;
+    dec = dec/8;
+    i = i*10;
+}
+printf("oct = %d\n", oct);
+sprintf(to_ret, "%d", oct);
+}
 
 
 int main(int argc, char* argv[])
 {
-
-    char c[8]="aaaaaaaa";
-    for(int index = 0;index<8; index++){
-        for(int new_gid=0;new_gid<8; new_gid++){
-            char nbr = new_gid+'0';
-            c[index] = nbr;
-            printf("gid = %s\n", c);
-        }
+    char test [15] = "test";
+    int i=0;
+    while(test[i]!='\0'){
+        i++;
     }
+    printf("i = %d\n", i);
     return 0;
 
 
