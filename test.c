@@ -19,11 +19,8 @@ sprintf(to_ret, "%d", oct);
 int main(int argc, char* argv[])
 {
     char test [15] = "test";
-    int i=0;
-    while(test[i]!='\0'){
-        i++;
-    }
-    printf("i = %d\n", i);
+    
+    printf("size = %ld\n", sizeof(test));
     return 0;
 
 

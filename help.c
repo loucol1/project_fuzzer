@@ -43,8 +43,8 @@ int write_in_file(struct tar_t* to_write, char* content_of_file){
     {
         // On peut lire et écrire dans le fichier
         fwrite(to_write, sizeof(struct tar_t), 1, fichier);//header
-        fwrite(content_of_file, strlen(content_of_file)+1,1,fichier);//contenu du fichier
-        int nbr_to_write = 512-((strlen(content_of_file)+1)%512);
+        fwrite(content_of_file, strlen(content_of_file),1,fichier);//contenu du fichier
+        int nbr_to_write = 512-(strlen(content_of_file)%512);
         char zero[2] = "0";
         fwrite(zero, sizeof(char), nbr_to_write, fichier); 
         fwrite(end_of_archive, 1024*sizeof(char), 1, fichier);//fin du fichier
@@ -696,8 +696,10 @@ int without_zero_at_the_end(int *count_crash, int *count_other_msg, char* argume
     strcpy(test_sacha1->magic, "ustar");
     strcpy(test_sacha1->version, "00");
     char content[6]="AAAAA";
-    char size_of_content = (char) sizeof(content);
-    strcpy(test_sacha1->size, "05");//pcq on met 5*A dans le fichier 
+    //char size_of_content = (char) sizeof(content);
+    char *size_of_content = (char*) calloc(12, sizeof(char));
+    dec_to_oct(strlen(content), size_of_content);
+    strcpy(test_sacha1->size, size_of_content);//pcq on met 5*A dans le fichier 
     int check = calculate_checksum(test_sacha1);
 
     FILE* fichier = NULL;
@@ -707,8 +709,8 @@ int without_zero_at_the_end(int *count_crash, int *count_other_msg, char* argume
     {
         // On peut lire et écrire dans le fichier
         fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
-        fwrite(content, strlen(content)+1,1,fichier);//contenu du fichier
-        int nbr_to_write = 512-(strlen(content)+1);
+        fwrite(content, strlen(content),1,fichier);//contenu du fichier
+        int nbr_to_write = 512-(strlen(content));
         char zero[2] = "0";
         fwrite(zero, sizeof(char), nbr_to_write, fichier); 
         //fwrite(end_of_archive, 1024*sizeof(char), 1, fichier);//fin du fichier
@@ -841,8 +843,11 @@ int two_header_no_data(int *count_crash, int *count_other_msg, char* argument){
     if (fichier != NULL)
     {
         // On peut lire et écrire dans le fichier
-        fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
-        fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
+        for(int i=0;i<100;i++){
+            fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
+        }
+        
+        //fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
         fwrite(end_of_archive, 1024*sizeof(char), 1, fichier);//fin du fichier
         if(fwrite==0){
             printf("error writting file \n");
@@ -869,8 +874,8 @@ int lot_of_header(int *count_crash, int *count_other_msg, char* argument){
     strcpy(test_sacha1->version, "00");
     char content[7]="azerty";
     char* size_of_content = (char*) calloc(12, sizeof(char));
-    dec_to_oct(sizeof(content), size_of_content);
-    printf("sizeof content = %s\n", size_of_content);
+    dec_to_oct(strlen(content), size_of_content);
+    //printf("sizeof content = %s\n", size_of_content);
     strcpy(test_sacha1->size, size_of_content);
     int check = calculate_checksum(test_sacha1);
 
@@ -881,12 +886,12 @@ int lot_of_header(int *count_crash, int *count_other_msg, char* argument){
 
     if (fichier != NULL)
     {
-        for(int rep=0; rep<10000; rep++){
+        for(int rep=0; rep<1000; rep++){
             fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
-            fwrite(content, strlen(content)+1,1,fichier);//contenu du fichier
-            int nbr_to_write = 512-(strlen(content)+1);
+            fwrite(content, strlen(content),1,fichier);//contenu du fichier
+            int nbr_to_write = 512-(strlen(content));
             char zero[2] = "0";
-            fwrite(zero, sizeof(char), nbr_to_write, fichier);            
+            int test_fwrite = fwrite(zero, sizeof(char), nbr_to_write, fichier);       
 
         }
         // On peut lire et écrire dans le fichier
@@ -919,7 +924,7 @@ int write_after_end(int *count_crash, int *count_other_msg, char* argument){
     strcpy(test_sacha1->version, "00");
     char content[7]="azerty";
     char* size_of_content = (char*) calloc(12, sizeof(char));
-    dec_to_oct(sizeof(content), size_of_content);
+    dec_to_oct(strlen(content), size_of_content);
     printf("sizeof content = %s\n", size_of_content);
     strcpy(test_sacha1->size, size_of_content);
     int check = calculate_checksum(test_sacha1);
@@ -938,8 +943,8 @@ int write_after_end(int *count_crash, int *count_other_msg, char* argument){
     {
         // On peut lire et écrire dans le fichier
         fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
-        fwrite(content, strlen(content)+1,1,fichier);//contenu du fichier
-        int nbr_to_write = 512-(strlen(content)+1);
+        fwrite(content, strlen(content),1,fichier);//contenu du fichier
+        int nbr_to_write = 512-(strlen(content));
         char zero[2] = "0";
         fwrite(zero, sizeof(char), nbr_to_write, fichier); 
         fwrite(end_of_archive, 1024*sizeof(char), 1, fichier);//fin du fichier
@@ -961,7 +966,56 @@ int write_after_end(int *count_crash, int *count_other_msg, char* argument){
     return 0;
 }
 
+int test(int *count_crash, int *count_other_msg, char* argument){
+    printf("test\n");
+    int flag = 0;
+    struct tar_t* test_sacha1 = (struct tar_t*) calloc(1,sizeof(struct tar_t));
+    strcpy(test_sacha1->name, "coucou.txt");
+    strcpy(test_sacha1->magic, "ustar");
+    strcpy(test_sacha1->version, "00");
+    char content[20]="azerty20";
+    char* size_of_content = (char*) calloc(12, sizeof(char));
+    dec_to_oct(strlen(content), size_of_content);
+    strcpy(test_sacha1->size, size_of_content);
+    //strcpy(test_sacha1->size, "00000000000");
+    int check = calculate_checksum(test_sacha1);
+    
 
+    FILE* fichier = NULL;
+    fichier = fopen("archive.tar", "w+");
+    char* end_of_archive = (char *) calloc(1025, sizeof(char));
+    //memset(end_of_archive, '\0', 1024);
+
+
+
+    if (fichier != NULL)
+    {
+        fwrite(test_sacha1, sizeof(struct tar_t), 1, fichier);//header
+        fwrite(content, strlen(content),1,fichier);//contenu du fichier
+        int nbr_to_write = 512-strlen(content);
+        char zero[2] = "0";
+        int test_fwrite = fwrite(zero, sizeof(char), nbr_to_write, fichier);   
+        //printf("test_fwrite = %d\n", test_fwrite);         
+
+        
+        // On peut lire et écrire dans le fichier
+        
+        fwrite(end_of_archive, 1024*sizeof(char), 1, fichier);//fin du fichier
+        if(fwrite==0){
+            printf("error writting file \n");
+        }
+
+        fclose(fichier);
+    }
+    else
+    {
+        // l'ouverture du fichier .tar ne s'est pas bie faite
+        printf("Impossible d'ouvrir le fichier archive.tar \n");
+    }
+    flag = check_extractor(count_crash, count_other_msg, argument, test_sacha1->name);
+    free(test_sacha1);
+    return 0;
+}
 
 
 int main(int argc, char* argv[])
@@ -972,25 +1026,26 @@ int main(int argc, char* argv[])
     int count_other_msg = 0;
     
     change_mode(&count_crash, &count_other_msg, argv[1]);
-    //change_uid(&count_crash, &count_other_msg, argv[1]);
+    change_uid(&count_crash, &count_other_msg, argv[1]);
     change_gid(&count_crash, &count_other_msg, argv[1]);
-    //change_size(&count_crash, &count_other_msg, argv[1]);
-    //change_mtime(&count_crash, &count_other_msg, argv[1]);
-    //change_chksum(&count_crash, &count_other_msg, argv[1]);
-    //change_name(&count_crash, &count_other_msg, argv[1]);
-    //change_typeflag(&count_crash, &count_other_msg, argv[1]);
-    //change_linkname(&count_crash, &count_other_msg, argv[1]);
-    //change_magic(&count_crash, &count_other_msg, argv[1]);
-    //change_version(&count_crash, &count_other_msg, argv[1]);
-    //change_uname(&count_crash, &count_other_msg, argv[1]);
-    //change_gname(&count_crash, &count_other_msg, argv[1]);
+    change_size(&count_crash, &count_other_msg, argv[1]);
+    change_mtime(&count_crash, &count_other_msg, argv[1]);
+    change_chksum(&count_crash, &count_other_msg, argv[1]);
+    change_name(&count_crash, &count_other_msg, argv[1]);
+    change_typeflag(&count_crash, &count_other_msg, argv[1]);
+    change_linkname(&count_crash, &count_other_msg, argv[1]);
+    change_magic(&count_crash, &count_other_msg, argv[1]);
+    change_version(&count_crash, &count_other_msg, argv[1]);
+    change_uname(&count_crash, &count_other_msg, argv[1]);
+    change_gname(&count_crash, &count_other_msg, argv[1]);
 
-    //without_zero_at_the_end(&count_crash, &count_other_msg, argv[1]);
-    //change_content(&count_crash, &count_other_msg, argv[1]);
-    //no_data(&count_crash, &count_other_msg, argv[1]);
-    //two_header_no_data(&count_crash, &count_other_msg, argv[1]);
-    //lot_of_header(&count_crash, &count_other_msg, argv[1]);
-    //write_after_end(&count_crash, &count_other_msg, argv[1]);
+    without_zero_at_the_end(&count_crash, &count_other_msg, argv[1]);
+    change_content(&count_crash, &count_other_msg, argv[1]);
+    no_data(&count_crash, &count_other_msg, argv[1]);
+    two_header_no_data(&count_crash, &count_other_msg, argv[1]);
+    lot_of_header(&count_crash, &count_other_msg, argv[1]);
+    write_after_end(&count_crash, &count_other_msg, argv[1]);
+    //test(&count_crash, &count_other_msg, argv[1]);
 
     printf ("number of crashes = %d\n", count_crash);
     printf ("number of other msg = %d\n", count_other_msg);
