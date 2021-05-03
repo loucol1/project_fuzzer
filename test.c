@@ -3,27 +3,22 @@
 #include <stdlib.h>
 
 
-void dec_to_oct(long dec, char* to_ret){
-int oct = 0;
-int i = 1;
-while(dec !=0){
-    oct = oct +(dec%8)*i;
-    dec = dec/8;
-    i = i*10;
+int test_char(char* c){
+if(c==NULL){
+    printf("NULL\n");
+    
 }
-printf("oct = %d\n", oct);
-sprintf(to_ret, "%d", oct);
+else{
+    printf("OK\n");
+}
+return 0;
 }
 
 
 int main(int argc, char* argv[])
 {
-    char test [15] = "test";
-    
-    printf("size = %ld\n", sizeof(test));
-    return 0;
-
-
+    char *alpha = "alpha";
+    test_char(NULL);
 }
 
 
