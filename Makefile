@@ -1,7 +1,4 @@
-helpmake: help.c
-	gcc -o help help.c
+helpmake: fuzzer.c
+	gcc -o fuzzer fuzzer.c
 
-clean:
-	rm Sacha.txt
-
-all: helpmake clean
+all: helpmake
